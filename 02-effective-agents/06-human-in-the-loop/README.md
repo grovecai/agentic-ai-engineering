@@ -20,6 +20,7 @@ Pause the workflow at strategic checkpoints for human review. The LLM drafts an 
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_human_in_the_loop.py](01_human_in_the_loop.py) | Email drafting with 2 strategic checkpoints |
+| DeepSeek | [02_human_in_the_loop_deepseek.py](02_human_in_the_loop_deepseek.py) | Same approval, feedback, and edit flow via DeepSeek's Responses API |
 
 ## 🚀 Quick Start
 
@@ -30,6 +31,9 @@ uv run --directory 02-effective-agents/06-human-in-the-loop python {script_name}
 
 # Example
 uv run --directory 02-effective-agents/06-human-in-the-loop python 01_human_in_the_loop.py
+
+# DeepSeek (requires DEEPSEEK_API_KEY in the root .env)
+uv run --directory 02-effective-agents/06-human-in-the-loop python 02_human_in_the_loop_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -82,6 +86,8 @@ CheckpointFn = Callable[[str, str, str], tuple[bool, str]]
 - In the terminal: `human_checkpoint()` prompts via Rich UI
 - In tests: pass a lambda that auto-approves
 - In production: replace with a Slack message, webhook, or UI modal
+
+The DeepSeek version uses `deepseek-flash` by default. Set `DEEPSEEK_API_KEY` in the root `.env`; optionally override `DEEPSEEK_HUMAN_LOOP_MODEL` or `DEEPSEEK_BASE_URL`. Its checkpoints use the same `CheckpointFn` contract and the draft is never sent as an email. Each revision receives the original scenario, the latest draft, and all human feedback in order. Newer feedback takes precedence if instructions conflict; older full drafts are omitted to keep context small.
 
 ### The Leverage Principle
 

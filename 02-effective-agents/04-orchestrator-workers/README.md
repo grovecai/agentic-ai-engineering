@@ -20,6 +20,7 @@ A central LLM dynamically breaks down a task, delegates subtasks to worker LLMs,
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_orchestrator_workers.py](01_orchestrator_workers.py) | Deep dive researcher with dynamic subtopic planning |
+| DeepSeek | [02_orchestrator_workers_deepseek.py](02_orchestrator_workers_deepseek.py) | Dynamic planning, parallel workers, and synthesis with DeepSeek |
 
 ## 🚀 Quick Start
 
@@ -30,6 +31,7 @@ uv run --directory 02-effective-agents/04-orchestrator-workers python {script_na
 
 # Example
 uv run --directory 02-effective-agents/04-orchestrator-workers python 01_orchestrator_workers.py
+uv run --directory 02-effective-agents/04-orchestrator-workers python 02_orchestrator_workers_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -61,11 +63,16 @@ Unlike [03 - Parallelization](../03-parallelization/) (where you hardcode the fa
 tool_choice={"type": "tool", "name": "create_research_plan"}
 ```
 
-"Compare Bun vs Node.js" might produce: Performance, NPM Compatibility, Debugging, Deployment, Community.
+"Compare Bun vs Node.js" might produce: Performance, NPM Compatibility, Debugging, and Deployment.
+
+The DeepSeek version uses a forced `create_research_plan` function call through the Responses API and validates that the plan has 2-4 distinct subtopics. Set `DEEPSEEK_API_KEY` in the root `.env`; optionally override `DEEPSEEK_ORCHESTRATOR_MODEL` (`deepseek-v4-pro`), `DEEPSEEK_WORKER_MODEL` (`deepseek-flash`), or `DEEPSEEK_BASE_URL`.
+The orchestrator also fills the tool's required `synthesis_instructions` field. The DeepSeek example logs that text after planning and passes it to the final synthesizer prompt.
 
 ### Worker Pattern
 
 Workers are generic researchers — the orchestrator gives them specific prompts. You define the worker's *capability* (research a topic in depth), not the specific task. This is the key difference from parallelization: the LLM decides the work breakdown.
+
+DeepSeek's Responses API does not provide the built-in web search used by the Anthropic workers here. The DeepSeek workers analyze from model knowledge and explicitly avoid claiming current facts are verified. Provide source material or a separate search tool for up-to-date research.
 
 ### Synthesis
 

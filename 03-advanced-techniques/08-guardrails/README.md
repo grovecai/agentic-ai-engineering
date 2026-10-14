@@ -20,6 +20,7 @@ Every previous tutorial taught you to build capable agents. This one teaches you
 | Provider                                        | File                                                     | Description                                 |
 | ----------------------------------------------- | -------------------------------------------------------- | ------------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_guardrails_anthropic.py](01_guardrails_anthropic.py) | Customer support agent with full guardrails |
+| DeepSeek | [02_guardrails_deepseek.py](02_guardrails_deepseek.py) | Same guardrails using DeepSeek's Responses API |
 
 ## Quick Start
 
@@ -28,6 +29,16 @@ Every previous tutorial taught you to build capable agents. This one teaches you
 ```bash
 uv run --directory 03-advanced-techniques/08-guardrails python 01_guardrails_anthropic.py
 ```
+
+For DeepSeek, set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 03-advanced-techniques/08-guardrails python 02_guardrails_deepseek.py
+```
+
+The DeepSeek version uses `deepseek-flash` for both the agent and the classifier. Set
+`DEEPSEEK_GUARDRAILS_MODEL`, `DEEPSEEK_GUARDRAILS_CLASSIFIER_MODEL`, or `DEEPSEEK_BASE_URL`
+to override those defaults. Both versions share the same `InputGuard` and `OutputGuard` checks.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 
@@ -128,6 +139,11 @@ class InputGuard:
 # safety/output_guard.py
 class OutputGuard:
     def check(self, output: str, context: str | None) -> OutputCheckResult: ...
+
+# safety/deepseek_client.py
+class DeepSeekClient:
+    # Adapts DeepSeek Responses API calls for the shared guards
+    def create(self, *, model, max_tokens, messages, system=None): ...
 ```
 
 ### Script 01 — Guardrailed Agent
@@ -138,6 +154,10 @@ class GuardedAgent:
     # Returns (response, input_checks, output_checks)
 ```
 
+### Script 02 — DeepSeek Guardrailed Agent
+
+`02_guardrails_deepseek.py` uses the same guard classes and a DeepSeek Responses API adapter.
+
 ## Important Considerations
 
 - **No guardrail is 100%** — defense in depth reduces risk, it doesn't eliminate it. Novel attacks will always emerge. The goal is to make exploitation expensive and unreliable.
@@ -145,6 +165,7 @@ class GuardedAgent:
 - **False positives frustrate users** — start with permissive thresholds (risk level 2+ = block) and tighten based on observed attacks. Blocking legitimate users is worse than missing edge cases.
 - **Guard calls add latency** — each Haiku check adds 200-500ms. Use heuristics first to filter obvious cases and only call Haiku when needed.
 - **PII regex is approximate** — the patterns catch common formats but miss edge cases. For production PII detection, use [Microsoft Presidio](https://microsoft.github.io/presidio/).
+- **Output checks are advisory in these demos** — failed output checks are displayed, but the response is still shown. A production app should block, redact, or retry before sending a failed response.
 
 ## Next Steps
 

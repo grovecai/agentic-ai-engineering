@@ -17,6 +17,7 @@ But naive RAG (embed everything, retrieve top-5, hope for the best) has well-doc
 - Combine BM25 keyword search with vector search using reciprocal rank fusion
 - Rerank results with FlashRank for precision without API costs
 - Build an agentic RAG system where the agent controls retrieval as a tool
+- Run both approaches with Claude or DeepSeek
 - Understand when to use RAG vs. just putting everything in the context window
 
 ## 📦 Available Examples
@@ -25,13 +26,23 @@ But naive RAG (embed everything, retrieve top-5, hope for the best) has well-doc
 | ----------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_rag_pipeline_anthropic.py](01_rag_pipeline_anthropic.py)                     | Full RAG pipeline with hybrid search        |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [02_agentic_rag_anthropic.py](02_agentic_rag_anthropic.py)                       | Agent-controlled retrieval with tool use    |
+| DeepSeek | [03_rag_pipeline_deepseek.py](03_rag_pipeline_deepseek.py) | Full RAG pipeline with hybrid search |
+| DeepSeek | [04_agentic_rag_deepseek.py](04_agentic_rag_deepseek.py) | Agent-controlled retrieval with tool use |
 
 ## 🚀 Quick Start
 
 > **Prerequisites:** Python 3.11+, API keys, and uv. See [SETUP.md](../../SETUP.md) for full setup instructions.
 
-This tutorial requires one API key:
-- `ANTHROPIC_API_KEY` — for Claude (generation)
+Set the API key for the provider you want to run in the root `.env` file:
+- `ANTHROPIC_API_KEY` — for the Claude scripts
+- `DEEPSEEK_API_KEY` — for the DeepSeek scripts
+
+The DeepSeek scripts use `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`)
+and `DEEPSEEK_MODEL` (default `deepseek-flash`) when set.
+
+On Intel macOS, this lesson pins PyTorch 2.2.2 and ONNX Runtime 1.23.2,
+which provide Python 3.11/3.12 x86_64 wheels. It also uses NumPy 1.x and
+Transformers 4.x for compatibility with that PyTorch release.
 
 Embeddings run locally using `sentence-transformers` (all-MiniLM-L6-v2, ~80MB download on first run).
 
@@ -41,11 +52,22 @@ uv run --directory 03-advanced-techniques/06-rag-techniques python 01_rag_pipeli
 
 # Agentic RAG demo
 uv run --directory 03-advanced-techniques/06-rag-techniques python 02_agentic_rag_anthropic.py
+
+# DeepSeek pipeline and agentic RAG demos
+uv run --directory 03-advanced-techniques/06-rag-techniques python 03_rag_pipeline_deepseek.py
+uv run --directory 03-advanced-techniques/06-rag-techniques python 04_agentic_rag_deepseek.py
+```
+
+Or use the launcher from the repository root (the default mode is `pipeline`):
+
+```bash
+./03-advanced-techniques/06-rag-techniques/run_deepseek.sh pipeline
+./03-advanced-techniques/06-rag-techniques/run_deepseek.sh agentic
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 
-The first run downloads the embedding model (~80MB) and reranking model (~4MB), then creates embeddings for the sample documents. Subsequent runs load from the persisted ChromaDB index.
+The first run downloads the embedding model (~80MB) and reranking model (~4MB), then creates embeddings for the sample documents. The ChromaDB collection persists in `.chroma_db/`; the demo currently recomputes and upserts embeddings on each run.
 
 ## 🔑 Key Concepts
 
@@ -87,7 +109,7 @@ flowchart LR
         J --> K["📊 Rerank        "]
     end
 
-    K --> L["🧠 Generate (Claude)"]
+    K --> L["🧠 Generate (Claude or DeepSeek)"]
     L --> M["📄 Answer + Citations"]
 ```
 
@@ -223,7 +245,7 @@ class Reranker:
     def rerank(self, query: str, chunks: list[Chunk], top_k: int) -> list[Chunk]: ...
 ```
 
-### Script 01 — Pipeline RAG (RAGPipeline)
+### Scripts 01 and 03 — Pipeline RAG (RAGPipeline)
 
 ```python
 class RAGPipeline:
@@ -231,7 +253,7 @@ class RAGPipeline:
     def query(self, question: str) -> tuple[str, list[Chunk]]: ...
 ```
 
-### Script 02 — Agentic RAG (AgenticRAG)
+### Scripts 02 and 04 — Agentic RAG (AgenticRAG)
 
 ```python
 class AgenticRAG:
@@ -240,8 +262,8 @@ class AgenticRAG:
 
 ## ⚠️ Important Considerations
 
-- **One API key required** — `ANTHROPIC_API_KEY` for Claude. Embeddings run locally with no API key.
-- **First run setup** — The first run downloads the embedding model (~80MB) and FlashRank reranker (~4MB), then creates embeddings. Subsequent runs load from the persisted `.chroma_db/` directory. Delete `.chroma_db/` to force re-indexing.
+- **One API key required per run** — `ANTHROPIC_API_KEY` for Claude or `DEEPSEEK_API_KEY` for DeepSeek. Embeddings run locally with no API key.
+- **First run setup** — The first run downloads the embedding model (~80MB) and FlashRank reranker (~4MB), then creates embeddings. The ChromaDB collection persists in `.chroma_db/`, but each demo run recomputes embeddings and upserts the sample documents.
 - **Embedding quality > retrieval tricks** — Bad embeddings can't be rescued by better retrieval strategies. Start with a good embedding model before tuning retrieval.
 - **Chunk size trade-offs** — Smaller chunks (256) give more precise retrieval but lose context. Larger chunks (1024) preserve context but reduce precision. 512 is a practical default.
 - **Cost at scale** — Embedding costs are one-time (at indexing). Retrieval is free (local ChromaDB + BM25). Only the generation call costs money per query.

@@ -2,13 +2,18 @@
 name = "lesson-rag-techniques"
 version = "0.1.0"
 description = "RAG pipeline with hybrid search, reranking, and agentic retrieval"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "anthropic>=0.76.0",
+    "openai>=1.0.0",
     "sentence-transformers>=3.0.0",
+    "torch==2.2.2",
+    "transformers<5",
+    "numpy<2",
     "chromadb>=1.0.0",
     "bm25s>=0.2.0",
     "flashrank>=0.2.0",
+    "onnxruntime==1.23.2",
     "python-dotenv>=1.0.0",
     "common",
     "rich>=13.7.0",

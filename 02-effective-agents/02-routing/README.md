@@ -20,6 +20,7 @@ Route to specialized handlers based on content analysis. The router picks the ri
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_routing.py](01_routing.py) | Content strategist with 3 specialized routes |
+| DeepSeek | [02_routing_deepseek.py](02_routing_deepseek.py) | Same 3 routes using DeepSeek's Responses API |
 
 ## 🚀 Quick Start
 
@@ -30,6 +31,7 @@ uv run --directory 02-effective-agents/02-routing python {script_name}
 
 # Example
 uv run --directory 02-effective-agents/02-routing python 01_routing.py
+uv run --directory 02-effective-agents/02-routing python 02_routing_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -45,6 +47,8 @@ tool_choice={"type": "tool", "name": "classify_content"}
 ```
 
 The classifier returns a `content_type` (tutorial, news, concept) and `reasoning` for transparency. By forcing a tool call, the output is always valid JSON matching the schema — no regex or string parsing required.
+
+The DeepSeek version forces a `classify_content` function call through the Responses API, parses its JSON arguments, and validates the selected route. Set `DEEPSEEK_API_KEY` in the root `.env` file. You can override the default models with `DEEPSEEK_ROUTING_MODEL` (`deepseek-v4-pro`) and `DEEPSEEK_ROUTING_LIGHT_MODEL` (`deepseek-flash`). It disables thinking mode for these content-generation calls and does not perform web search, so the news route treats unverified changes as uncertain.
 
 ### Specialized Routes
 

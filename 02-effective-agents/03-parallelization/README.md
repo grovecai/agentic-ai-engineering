@@ -21,6 +21,7 @@ Fan-out for independent work, fan-in to combine. Independent tasks run concurren
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_parallelization.py](01_parallelization.py) | Social media promo pack + SEO title voting |
+| DeepSeek | [02_parallelization_deepseek.py](02_parallelization_deepseek.py) | Same parallel promo pack and title voting with DeepSeek |
 
 ## 🚀 Quick Start
 
@@ -31,6 +32,7 @@ uv run --directory 02-effective-agents/03-parallelization python {script_name}
 
 # Example
 uv run --directory 02-effective-agents/03-parallelization python 01_parallelization.py
+uv run --directory 02-effective-agents/03-parallelization python 02_parallelization_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -81,9 +83,11 @@ flowchart TD
 
 Lower temperatures produce safe, predictable titles. Higher temperatures produce creative, surprising ones. The evaluator picks the best from a diverse candidate pool — more variety in, better selection out.
 
+The DeepSeek version uses `deepseek-flash` by default. Set `DEEPSEEK_API_KEY` in the root `.env` file, and optionally `DEEPSEEK_PARALLEL_MODEL` or `DEEPSEEK_BASE_URL`. It disables thinking mode so the three temperature settings can affect title generation.
+
 ### Thread Safety
 
-The Anthropic Python client is thread-safe. Each `ThreadPoolExecutor` worker makes its own API call independently. Token tracking uses simple integer addition (safe for this use case).
+Each `ThreadPoolExecutor` worker makes its own API call independently. The DeepSeek version protects shared token totals with a lock while responses finish on different threads.
 
 ### Event Callbacks
 

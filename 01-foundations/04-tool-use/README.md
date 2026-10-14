@@ -21,6 +21,7 @@ Learn how to give LLMs the ability to call functions (tools) to interact with th
 | ----------------------------------------------- | ---------------------------------------------------- | ---------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_tool_use_anthropic.py](01_tool_use_anthropic.py) | Tool use with Claude Messages API  |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [02_tool_use_openai.py](02_tool_use_openai.py)       | Tool use with OpenAI Responses API |
+| DeepSeek | [03_tool_use_deepseek.py](03_tool_use_deepseek.py) | Tool use with DeepSeek Responses API |
 
 ## 🚀 Quick Start
 
@@ -32,6 +33,14 @@ uv run --directory 01-foundations/04-tool-use python {script_name}
 # Example
 uv run --directory 01-foundations/04-tool-use python 01_tool_use_anthropic.py
 ```
+
+To use DeepSeek, set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 01-foundations/04-tool-use python 03_tool_use_deepseek.py
+```
+
+The script uses the existing OpenAI SDK with `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`) and `DEEPSEEK_MODEL` (default `deepseek-flash`). It offers calculator, file reader, and command examples; its command tool accepts only `ls`, `pwd`, `echo`, and `date`, and its file reader stays inside the lesson directory. DeepSeek's [Responses API is stateless](https://api-docs.deepseek.com/guides/responses_api/), so the script resends prior messages, function calls, and function results on each request.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

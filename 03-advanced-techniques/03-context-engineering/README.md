@@ -17,6 +17,7 @@ The key insight: context engineering isn't about cramming more in — it's about
 - Implement sliding window + summarization to compress older messages automatically
 - Visualize context usage in real-time with a budget display
 - Understand the trade-offs between different compression strategies
+- Apply the same strategies with DeepSeek's stateless Responses API and estimated preflight counts
 
 ## 📦 Available Examples
 
@@ -24,6 +25,8 @@ The key insight: context engineering isn't about cramming more in — it's about
 | ----------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_context_engineering_anthropic.py](01_context_engineering_anthropic.py) | Interactive chat with budget management                   |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [02_tool_context_anthropic.py](02_tool_context_anthropic.py)               | Tool output context strategies (naive/truncate/summarize) |
+| DeepSeek | [03_context_engineering_deepseek.py](03_context_engineering_deepseek.py) | Chat budget and automatic summary compression |
+| DeepSeek | [04_tool_context_deepseek.py](04_tool_context_deepseek.py) | Tool output strategies with Responses API function calls |
 
 ## 🚀 Quick Start
 
@@ -31,11 +34,17 @@ The key insight: context engineering isn't about cramming more in — it's about
 
 ```bash
 uv run --directory 03-advanced-techniques/03-context-engineering python 01_context_engineering_anthropic.py
+
+# DeepSeek (requires DEEPSEEK_API_KEY)
+uv run --directory 03-advanced-techniques/03-context-engineering python 03_context_engineering_deepseek.py
+uv run --directory 03-advanced-techniques/03-context-engineering python 04_tool_context_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 
 The demo uses an artificially low context budget (~2,000 tokens for history) so you'll see compression trigger after just a few exchanges. Chat about any topic — the budget display updates after each turn.
+
+The DeepSeek scripts default to `deepseek-flash`; set `DEEPSEEK_CONTEXT_MODEL` to use another supported model.
 
 ## 🔑 Key Concepts
 
@@ -193,6 +202,14 @@ def _process_tool_result(self, tool_name: str, raw_result: str) -> str:
     if self.strategy == "summarize":
         return self._summarize_result(tool_name, raw_result)
 ```
+
+### 8. DeepSeek Token Estimates and Stateless History
+
+DeepSeek's Responses API returns exact `usage.input_tokens` **after** a request. It does not expose the Anthropic-style `messages.count_tokens()` preflight endpoint. The DeepSeek examples therefore estimate input tokens locally from UTF-8 bytes and label the budget display as an estimate. This is a teaching threshold, not a guaranteed context-limit check; the last actual API input count is displayed separately. The local estimate can differ from DeepSeek's tokenizer, especially for code or multilingual text.
+
+DeepSeek's Responses API is stateless: each request includes the retained message history. The tool example retains complete `function_call` / `function_call_output` pairs within the current turn when compressing earlier turns. The three tool-output strategies remain raw JSON, a 500-character truncation, and an extra model call that summarizes relevant facts. The bundled `database.json` supplies demo data.
+
+The tool example commits a conversation turn only after all tool results and the final answer succeed. If summarization fails or reaches its output limit, the turn is rolled back so a later user message cannot inherit an unmatched function call. Summaries focus on the current question and retry once with a larger output limit when truncated.
 
 The summarize strategy uses a focused system prompt to extract only the relevant facts:
 

@@ -17,6 +17,7 @@ Get validated, typed, production-safe data from LLMs — and handle when it brea
 - Build **self-healing extraction** with validation + retry error feedback loops
 - Process **multiple items in batch** with a single API call
 - Compare **Anthropic vs OpenAI** approaches — fundamentally different mechanisms, same goal
+- Compare **DeepSeek** function calls, JSON Schema output, validation retries, and batch extraction
 
 ## 📦 Available Examples
 
@@ -24,6 +25,7 @@ Get validated, typed, production-safe data from LLMs — and handle when it brea
 |----------|--------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_structured_output_anthropic.py](01_structured_output_anthropic.py) | 4 techniques: tool_use, native schema, validation+retry, batch |
 | ![OpenAI](../../.docs/badges/openai.svg) | [02_structured_output_openai.py](02_structured_output_openai.py) | OpenAI comparison: `text.format` with strict schema (simple + complex) |
+| DeepSeek | [03_structured_output_deepseek.py](03_structured_output_deepseek.py) | 4 techniques with DeepSeek Responses API and Pydantic validation |
 
 ## 🚀 Quick Start
 
@@ -35,9 +37,12 @@ uv run --directory 03-advanced-techniques/01-structured-output 01_structured_out
 
 # OpenAI (comparison — different mechanism)
 uv run --directory 03-advanced-techniques/01-structured-output 02_structured_output_openai.py
+
+# DeepSeek (set DEEPSEEK_API_KEY in .env)
+uv run --directory 03-advanced-techniques/01-structured-output 03_structured_output_deepseek.py
 ```
 
-Both scripts use an interactive menu — select a technique to see it in action.
+The Anthropic and DeepSeek scripts use an interactive menu — select a technique to see it in action.
 
 ## 🔑 Key Concepts
 
@@ -154,6 +159,12 @@ class TicketBatch(BaseModel):
 | **Reliability** | Guaranteed (both approaches) | Guaranteed (strict mode) |
 
 Both use constrained decoding to guarantee valid JSON — the API surface is the difference, not the mechanism or reliability.
+
+### DeepSeek: Responses API and Local Validation
+
+The DeepSeek example uses the OpenAI Python client with `DEEPSEEK_API_KEY` and the DeepSeek base URL. It forces a `function_call` for tool-based classification, then uses `text.format` with a JSON Schema for native structured output. The retry demo checks the generated JSON with Pydantic and sends business-rule validation errors back to DeepSeek. Batch extraction uses the same schema approach for two tickets in one call. Set `DEEPSEEK_STRUCTURED_MODEL` to override the default `deepseek-flash` model.
+
+JSON Schema constrains the response shape, while Pydantic checks additional rules such as requiring an escalation reason. The DeepSeek script validates every returned object locally and reports incomplete or empty responses as errors.
 
 ## ⚠️ Important Considerations
 

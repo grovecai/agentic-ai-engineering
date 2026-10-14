@@ -23,6 +23,8 @@ The [context engineering tutorial](../03-context-engineering/) taught you to man
 | ----------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_prompt_caching_anthropic.py](01_prompt_caching_anthropic.py)                 | Customer support agent with cached policy document |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [02_model_routing_anthropic.py](02_model_routing_anthropic.py)                   | Difficulty-based routing (Haiku vs Sonnet)         |
+| DeepSeek | [03_prompt_caching_deepseek.py](03_prompt_caching_deepseek.py) | Automatic prefix caching in a support conversation |
+| DeepSeek | [04_model_routing_deepseek.py](04_model_routing_deepseek.py) | Flash classifier and Flash/Pro routing |
 
 ## 🚀 Quick Start
 
@@ -34,9 +36,21 @@ uv run --directory 03-advanced-techniques/04-cost-optimization python 01_prompt_
 
 # Model routing demo
 uv run --directory 03-advanced-techniques/04-cost-optimization python 02_model_routing_anthropic.py
+
+# DeepSeek automatic context caching (ask multiple questions)
+uv run --directory 03-advanced-techniques/04-cost-optimization python 03_prompt_caching_deepseek.py
+
+# DeepSeek Flash / Pro model routing
+uv run --directory 03-advanced-techniques/04-cost-optimization python 04_model_routing_deepseek.py --demo
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
+
+### DeepSeek differences
+
+Set `DEEPSEEK_API_KEY` in the root `.env` file. `DEEPSEEK_BASE_URL` defaults to `https://api.deepseek.com`. DeepSeek's [context cache](https://api-docs.deepseek.com/guides/kv_cache/) is automatic: there is no `cache_control` breakpoint. The cache reuses matching input prefixes, including stable policy text and prior conversation turns. It does not cache answers, and a hit is not guaranteed. Inspect the reported cached and uncached input tokens after each call. Ask at least three questions: in a live check, the first two calls had zero cached tokens and the third had a cache hit.
+
+The DeepSeek scripts estimate costs using the [published Flash and Pro prices](https://api-docs.deepseek.com/quick_start/pricing/). Set `DEEPSEEK_PRICE_TIER=peak` if calls occur during peak pricing; otherwise the examples use `off_peak`. Check current prices and the applicable tier before treating these estimates as bills. The routing example includes the Flash classifier cost. Its all-Pro comparison is a counterfactual estimate using the routed answer's token counts and cache usage; an actual Pro response can differ.
 
 ## 🔑 Key Concepts
 
@@ -186,7 +200,7 @@ class ModelRouter:
 ## ⚠️ Important Considerations
 
 - **Cache TTL** — Anthropic's prompt cache has a 5-minute TTL. Caching only helps if you make multiple requests within that window. Each cache hit refreshes the timer.
-- **Write premium** — The first call pays 1.25x for cached tokens. You need at least 4 cache hits to break even on the write cost (since reads are 0.1x).
+- **Write premium** — The first call pays 1.25x for cached tokens. At 0.1x per read, one subsequent hit is enough to recover that premium compared with two full-price reads.
 - **Cannot "un-cache"** — Once cached server-side, you can't force a cache miss. The scripts calculate "cost without caching" analytically by treating all tokens at the base input rate.
 - **Routing accuracy** — The classifier isn't perfect. Occasional misroutes (hard task → Haiku) may produce lower-quality responses. In production, add confidence thresholds or fallback logic.
 - **Pricing changes** — Token prices are hardcoded as constants. Check Anthropic's pricing page for current rates.

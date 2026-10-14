@@ -1,6 +1,7 @@
 """MemoryManager — orchestrates all three memory tiers."""
 
 import json
+import re
 
 import anthropic
 from common.logging_config import setup_logging
@@ -21,7 +22,11 @@ Return a JSON array of objects, each with:
 - "type": either "episodic" (events, interactions, things that happened) or \
 "semantic" (facts, preferences, knowledge)
 
-Only extract genuinely important information. Return an empty array [] if nothing is worth saving.
+Only extract genuinely important information that has not already been saved.
+Do not repeat or paraphrase an item in the already-saved list. Return [] if nothing new remains.
+
+Already saved during this session:
+{already_saved}
 
 Conversation:
 {conversation}
@@ -36,6 +41,12 @@ class MemoryManager:
         self.working = WorkingMemory()
         self.episodic = EpisodicMemory()
         self.semantic = SemanticMemory()
+        self._session_writes: list[MemoryEntry] = []
+
+    @staticmethod
+    def _content_key(content: str) -> str:
+        """Ignore case, spacing, and punctuation when checking exact facts."""
+        return re.sub(r"[\W_]+", "", content.casefold())
 
     def remember(
         self,
@@ -56,8 +67,10 @@ class MemoryManager:
             self.working.add(content, importance, metadata)
         elif memory_type == "episodic":
             self.episodic.save(entry)
+            self._session_writes.append(entry)
         elif memory_type == "semantic":
             self.semantic.save(entry)
+            self._session_writes.append(entry)
         else:
             return f"Unknown memory type: {memory_type}"
 
@@ -134,7 +147,23 @@ class MemoryManager:
         model: str,
     ) -> list[str]:
         """Use LLM to extract important items from conversation into persistent memory."""
-        # Build conversation text from messages
+        prompt = self.build_consolidation_prompt(conversation_messages)
+        if not prompt:
+            return []
+
+        try:
+            response = client.messages.create(
+                model=model,
+                max_tokens=1024,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return self.save_consolidation(response.content[0].text)
+        except (json.JSONDecodeError, anthropic.APIError) as e:
+            logger.error("Consolidation failed: %s", e)
+            return []
+
+    def build_consolidation_prompt(self, conversation_messages: list[dict]) -> str:
+        """Format conversation text for either provider's consolidation call."""
         parts: list[str] = []
         for msg in conversation_messages:
             role = msg["role"]
@@ -150,17 +179,23 @@ class MemoryManager:
 
         conversation_text = "\n".join(parts)
         if not conversation_text.strip():
-            return []
+            return ""
 
-        prompt = CONSOLIDATION_PROMPT.format(conversation=conversation_text)
-
-        try:
-            response = client.messages.create(
-                model=model,
-                max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}],
+        already_saved = (
+            "\n".join(
+                f"- [{entry.memory_type.value}] {entry.content}" for entry in self._session_writes
             )
-            raw = response.content[0].text.strip()
+            or "(none)"
+        )
+        return CONSOLIDATION_PROMPT.format(
+            already_saved=already_saved,
+            conversation=conversation_text,
+        )
+
+    def save_consolidation(self, raw: str) -> list[str]:
+        """Parse extracted memories and persist them in their selected tiers."""
+        try:
+            raw = raw.strip()
 
             # Strip markdown code fences if present
             if raw.startswith("```"):
@@ -173,13 +208,24 @@ class MemoryManager:
             if not isinstance(items, list):
                 return []
 
-        except (json.JSONDecodeError, anthropic.APIError) as e:
+        except json.JSONDecodeError as e:
             logger.error("Consolidation failed: %s", e)
             return []
 
+        existing = {
+            self._content_key(entry.content)
+            for entry in (*self.episodic.list_all(), *self.semantic.list_all())
+        }
         saved: list[str] = []
         for item in items:
-            content = item.get("content", "")
+            if not isinstance(item, dict):
+                continue
+            content = item.get("content")
+            if not isinstance(content, str):
+                continue
+            key = self._content_key(content)
+            if not key or key in existing:
+                continue
             importance = float(item.get("importance", 0.5))
             mem_type = item.get("type", "episodic")
 
@@ -187,6 +233,7 @@ class MemoryManager:
                 mem_type = "episodic"
 
             self.remember(content, memory_type=mem_type, importance=importance)
+            existing.add(key)
             saved.append(f"[{mem_type}] {content}")
 
         logger.info("Consolidated %d memories from conversation", len(saved))

@@ -5,6 +5,7 @@ description = "Context window management with token counting and compression"
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.76.0",
+    "openai>=1.0.0",
     "python-dotenv>=1.0.0",
     "common",
     "rich>=13.7.0",

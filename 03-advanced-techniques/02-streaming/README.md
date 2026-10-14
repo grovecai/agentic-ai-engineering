@@ -18,6 +18,7 @@ The real challenge isn't basic streaming — it's streaming with tool calls. Whe
 - Handle tool_use blocks mid-stream — detect, execute, resume
 - Build a complete streaming agent loop with tool calls
 - Track token usage with streaming (usage arrives at stream end)
+- Apply the same ideas with DeepSeek's Responses API events and function calls
 
 ## 📦 Available Examples
 
@@ -25,6 +26,8 @@ The real challenge isn't basic streaming — it's streaming with tool calls. Whe
 | ----------------------------------------------- | ------------------------------------------------------------ | -------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_streaming_fundamentals.py](01_streaming_fundamentals.py) | Text streaming + multi-turn chat |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [02_streaming_agent.py](02_streaming_agent.py)               | Streaming agent with tool calls  |
+| DeepSeek | [03_streaming_fundamentals_deepseek.py](03_streaming_fundamentals_deepseek.py) | Text deltas and event lifecycle |
+| DeepSeek | [04_streaming_agent_deepseek.py](04_streaming_agent_deepseek.py) | Streaming agent with function calls |
 
 ## 🚀 Quick Start
 
@@ -38,6 +41,10 @@ uv run --directory 03-advanced-techniques/02-streaming python 01_streaming_funda
 
 # Then try the streaming agent
 uv run --directory 03-advanced-techniques/02-streaming python 02_streaming_agent.py
+
+# DeepSeek equivalents (requires DEEPSEEK_API_KEY)
+uv run --directory 03-advanced-techniques/02-streaming python 03_streaming_fundamentals_deepseek.py
+uv run --directory 03-advanced-techniques/02-streaming python 04_streaming_agent_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -172,6 +179,12 @@ with client.messages.stream(...) as stream:
 ```
 
 `get_final_message()` returns the fully accumulated `Message` object — same as what `client.messages.create()` would return, but you got to stream it first.
+
+### 6. DeepSeek Responses API Streaming
+
+The DeepSeek examples use the OpenAI Python client with `DEEPSEEK_API_KEY` and `base_url="https://api.deepseek.com"`. Set `DEEPSEEK_STREAMING_MODEL` to override the default `deepseek-flash` model. `stream=True` emits `response.output_text.delta` events for visible text and ends with `response.completed`, `response.incomplete`, or `response.failed`. The terminal event carries the full response and token usage.
+
+For tools, watch `response.output_item.added` and `response.function_call_arguments.delta` while streaming, then read the completed `function_call` items from the final response. Execute them, append both the calls and `function_call_output` items to local history, and start another stream. DeepSeek's Responses API is stateless, so each request must include that history. The weather tool uses fixed demo data, not live weather.
 
 ## 🏗️ Code Structure
 

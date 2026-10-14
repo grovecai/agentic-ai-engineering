@@ -1,6 +1,6 @@
 <!-- ---
 title: "Simple LLM Call"
-description: "Make your first API call using Anthropic Claude, OpenAI GPT, and LiteLLM"
+description: "Make your first API call using Anthropic Claude, OpenAI GPT, DeepSeek, and LiteLLM"
 icon: "zap"
 --- -->
 
@@ -22,6 +22,7 @@ Learn how to make basic calls to LLM APIs. This tutorial demonstrates how to int
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_llm_call_anthropic.py](01_llm_call_anthropic.py) | Basic Claude Messages API calls    |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [02_llm_call_openai.py](02_llm_call_openai.py)       | Basic OpenAI Responses API calls   |
 | ![LiteLLM](../../.docs/badges/litellm.svg)     | [03_llm_call_litellm.py](03_llm_call_litellm.py)     | Unified interface for any provider |
+| DeepSeek | [04_llm_call_deepseek.py](04_llm_call_deepseek.py) | DeepSeek Responses API via OpenAI SDK |
 
 ## 🚀 Quick Start
 
@@ -35,6 +36,24 @@ uv run --directory 01-foundations/01-simple-llm-call python 01_llm_call_anthropi
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
+
+### DeepSeek
+
+Add your [DeepSeek API key](https://platform.deepseek.com/) to the root `.env` file:
+
+```dotenv
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-flash
+```
+
+The base URL and model are optional overrides with the defaults shown above. This example uses the existing `openai` dependency; no additional SDK is needed.
+
+```bash
+uv run --directory 01-foundations/01-simple-llm-call python 04_llm_call_deepseek.py
+```
+
+It follows the OpenAI example using DeepSeek's [Responses API](https://api-docs.deepseek.com/guides/responses_api/). Thinking is disabled with `reasoning={"effort": "none"}` for a short response and to let `temperature` take effect. A third-party endpoint must support `/responses` to run this example.
 
 ## 🔑 Key Concepts
 
@@ -79,6 +98,18 @@ from litellm import completion
 # Uses appropriate API key based on model name
 ```
 
+**DeepSeek (using the OpenAI SDK):**
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["DEEPSEEK_API_KEY"],
+    base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+)
+model = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
+```
+
 ### 3. Making API Calls
 
 **Anthropic (Messages API):**
@@ -121,6 +152,19 @@ response = completion(
 text = response.choices[0].message.content
 ```
 
+**DeepSeek (Responses API):**
+```python
+response = client.responses.create(
+    model=model,
+    temperature=0.1,
+    max_output_tokens=1024,
+    instructions="You are a helpful AI assistant.",
+    input="Hello!",
+    reasoning={"effort": "none"},
+)
+text = response.output_text
+```
+
 > These examples show basic (non-streaming) API calls. For streaming responses, see the [Anthropic Streaming docs](https://docs.anthropic.com/en/api/messages-streaming), [OpenAI Streaming docs](https://platform.openai.com/docs/api-reference/streaming), and [LiteLLM Streaming docs](https://docs.litellm.ai/docs/completion/stream).
 
 ### 4. Key Configuration Parameters
@@ -133,11 +177,11 @@ text = response.choices[0].message.content
 
 **Max Tokens**: Limits the response length
 - Anthropic/LiteLLM: `max_tokens`
-- OpenAI Responses API: `max_output_tokens`
+- OpenAI/DeepSeek Responses API: `max_output_tokens`
 
 **System Prompt**: Defines the assistant's behavior and context
 - Anthropic: `system` parameter
-- OpenAI: `instructions` parameter
+- OpenAI/DeepSeek: `instructions` parameter
 - LiteLLM: System message in `messages` array
 
 > Other advanced parameters like `top_p`, `top_k`, `stop_sequences`, `presence_penalty`, `frequency_penalty`, and `seed` will be covered in future tutorials.

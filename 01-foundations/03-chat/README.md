@@ -22,6 +22,7 @@ Build an interactive chat application with conversation history management. This
 | ----------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_chat_anthropic.py](01_chat_anthropic.py) | Interactive chat using Claude Messages API  |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [02_chat_openai.py](02_chat_openai.py)       | Interactive chat using OpenAI Responses API |
+| DeepSeek | [03_chat_deepseek.py](03_chat_deepseek.py) | Interactive chat using DeepSeek Responses API |
 
 ## 🚀 Quick Start
 
@@ -33,6 +34,14 @@ uv run --directory 01-foundations/03-chat python {script_name}
 # Example
 uv run --directory 01-foundations/03-chat python 01_chat_anthropic.py
 ```
+
+To chat with DeepSeek, set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 01-foundations/03-chat python 03_chat_deepseek.py
+```
+
+The script uses the existing OpenAI SDK. `DEEPSEEK_BASE_URL` defaults to `https://api.deepseek.com` and `DEEPSEEK_MODEL` defaults to `deepseek-flash`. DeepSeek's [Responses API is stateless](https://api-docs.deepseek.com/api/create-response/), so the script sends the full user/assistant message history with each turn.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

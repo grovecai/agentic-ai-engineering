@@ -20,6 +20,7 @@ Decompose a task into a sequence of fixed steps, where each LLM call processes t
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_prompt_chaining.py](01_prompt_chaining.py) | Blog post assembly line with 3-step chain |
+| DeepSeek | [02_prompt_chaining_deepseek.py](02_prompt_chaining_deepseek.py) | Same 3-step chain using DeepSeek's Responses API |
 
 ## 🚀 Quick Start
 
@@ -30,6 +31,7 @@ uv run --directory 02-effective-agents/01-prompt-chaining python {script_name}
 
 # Example
 uv run --directory 02-effective-agents/01-prompt-chaining python 01_prompt_chaining.py
+uv run --directory 02-effective-agents/01-prompt-chaining python 02_prompt_chaining_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -59,27 +61,32 @@ Between steps, validate that the previous step produced usable output. If the ou
 
 ### Dual Model Strategy
 
-The chain uses different models for different steps based on task complexity:
+The Anthropic chain uses different models for different steps based on task complexity:
 
 - **Sonnet** (steps 1 & 3): Outlining and editing require nuance and judgment
 - **Haiku** (step 2): Writing from a structured outline is more straightforward — a faster, cheaper model works well
 
 This is a practical cost optimization: use the most capable model only where it matters.
 
+The DeepSeek version uses `deepseek-v4-pro` for outlining and editing and `deepseek-flash` for writing. Set `DEEPSEEK_API_KEY` in your `.env` file; optionally override `DEEPSEEK_CHAIN_MODEL`, `DEEPSEEK_WRITER_MODEL`, or `DEEPSEEK_BASE_URL`.
+It disables DeepSeek's default thinking mode for these writing steps and allows up to 8192 output tokens per call, so the editor has room to return the complete article.
+
 ### Web Search in the Chain
 
-Step 2 (Writer) has access to Anthropic's built-in web search tool, limited to 3 uses per run:
+Step 2 (Writer) has access to Anthropic's built-in web search tool, limited to 1 use per run:
 
 ```python
-WEB_SEARCH_TOOL = {"type": "web_search_20250305", "name": "web_search", "max_uses": 3}
+WEB_SEARCH_TOOL = {"type": "web_search_20250305", "name": "web_search", "max_uses": 1}
 ```
 
-The model decides autonomously whether to search — the system prompt says "use web search if the topic would benefit from current information." This keeps the chain simple (no explicit search logic) while enabling grounded, up-to-date content.
+The Anthropic writer prompt asks the model to search. The model handles the search call within this step.
+
+The DeepSeek version does not use web search. Its writer prompt avoids invented citations and unverified time-sensitive claims. Add a separate search tool or retrieval step if your article needs current sources.
 
 ### Step Design
 
 - **Outliner** (Sonnet): Generate structure (title + 5 bullet points)
-- **Writer** (Haiku + web search): Expand outline into full blog post, 2-3 paragraphs per section
+- **Writer** (Haiku + web search): Expand outline into full blog post, 1-2 short paragraphs per section
 - **Editor** (Sonnet): Polish grammar, clarity, and flow; add a Key Takeaways section
 
 Each prompt is optimized for its specific task — not a single "do everything" prompt.

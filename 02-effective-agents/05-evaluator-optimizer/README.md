@@ -20,6 +20,7 @@ One LLM generates a response while another evaluates it in a loop, refining unti
 | Provider | File | Description |
 |----------|------|-------------|
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_evaluator_optimizer.py](01_evaluator_optimizer.py) | Blog post refinement with 5-dimension evaluation loop |
+| DeepSeek | [02_evaluator_optimizer_deepseek.py](02_evaluator_optimizer_deepseek.py) | Write, evaluate, and refine with DeepSeek's Responses API |
 
 ## 🚀 Quick Start
 
@@ -30,6 +31,9 @@ uv run --directory 02-effective-agents/05-evaluator-optimizer python {script_nam
 
 # Example
 uv run --directory 02-effective-agents/05-evaluator-optimizer python 01_evaluator_optimizer.py
+
+# DeepSeek (requires DEEPSEEK_API_KEY in the root .env)
+uv run --directory 02-effective-agents/05-evaluator-optimizer python 02_evaluator_optimizer_deepseek.py
 ```
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
@@ -62,6 +66,8 @@ The pipeline separates web search from writing to control token costs:
 
 Web search injects ~25-35k input tokens per search. By isolating it to the research phase, the write and refine steps stay lean.
 
+The DeepSeek version uses **Write → Evaluate → Refine** because its Responses API does not provide the web search tool used by the Anthropic example. It uses `deepseek-flash` for writing and evaluation and `deepseek-v4-pro` for refinement. Set `DEEPSEEK_API_KEY` in the root `.env`; optionally override `DEEPSEEK_EVALUATOR_MODEL`, `DEEPSEEK_EVALUATOR_LIGHT_MODEL`, or `DEEPSEEK_BASE_URL`. Its evaluator checks concrete criteria for each dimension, uses anchored score bands and caps for serious accuracy problems, and returns a draft-specific reason for every score. Issues and suggestions must be paired and actionable. Technical accuracy scores cannot verify current facts without external sources. It uses a 9.5 average-score threshold and allows at most four evaluations of the initial draft and its revisions (up to three revisions). Every round's revision suggestions are written to the log.
+
 ### Separation of Concerns
 
 The writer, evaluator, and refiner have fundamentally different goals:
@@ -85,7 +91,7 @@ Plus: specific issues and actionable suggestions — fed back to the refiner as 
 
 ### Convergence
 
-The loop terminates when average score >= threshold (default 7.0) or after max refinements (default 2). Most improvement happens in the first refinement — diminishing returns are real:
+The loop terminates when the average score reaches its threshold or the iteration limit. The Anthropic script uses a 7.0 threshold; its `MAX_REFINEMENTS = 2` currently permits two evaluations and one revision. The DeepSeek script uses a 9.5 threshold; its `MAX_EVALUATIONS = 4` permits four evaluations and up to three revisions. Most improvement happens in the first refinement — diminishing returns are real:
 
 ```python
 SCORE_THRESHOLD = 7.0

@@ -26,8 +26,15 @@ An agent that helps engineers explore and understand unfamiliar codebases. Point
 | # | Script | Provider | What it demonstrates |
 |---|--------|----------|---------------------|
 | 01 | `01_codebase_navigator.py` | ![Anthropic](https://img.shields.io/badge/Anthropic-191919?style=for-the-badge&logo=anthropic&logoColor=white) | Full augmented LLM with RAG, tools, and memory |
+| 02 | `02_codebase_navigator_deepseek.py` | DeepSeek | Same navigator using DeepSeek's Responses API |
 
-> **Contributions welcome!** We're looking for help porting this tutorial to additional providers. See [#13 — Port to OpenAI API](https://github.com/agenticloops-ai/ai-agents-engineering/issues/13) if you'd like to contribute.
+The DeepSeek version shares the same code index, tools, and JSON memory store with the Anthropic version. Set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 01-foundations/06-codebase-navigator python 02_codebase_navigator_deepseek.py
+```
+
+`DEEPSEEK_BASE_URL` defaults to `https://api.deepseek.com` and `DEEPSEEK_MODEL` defaults to `deepseek-flash`. The Responses API is stateless, so the agent resends conversation history, model function calls, and tool results on each request. The embedding model still runs locally.
 
 ## 🔑 Key Concepts
 
@@ -38,10 +45,10 @@ An agent that helps engineers explore and understand unfamiliar codebases. Point
 | Component | Description |
 |-----------|-------------|
 | **Vector Store** | Local ChromaDB containing embedded code chunks |
-| **Chunking** | Tree-sitter for AST-aware chunking (functions, classes, modules) |
+| **Chunking** | Line-based heuristics: top-level Python definitions or overlapping 50-line windows |
 | **Embeddings** | Sentence-transformers (`all-MiniLM-L6-v2`) for local embeddings |
 
-**Tools** — Clone repos, read files, search code, grep for patterns. The LLM decides which tools to use and when, executing them through Anthropic's native tool use API.
+**Tools** — Clone repos, read files, search code, grep for patterns. The LLM decides which tools to use and when, using the provider's tool calling API.
 
 | Tool | Purpose | Example use |
 |------|---------|-------------|
@@ -96,6 +103,7 @@ flowchart TB
 ```
 06-codebase-navigator/
 ├── 01_codebase_navigator.py             # Main entry point — agent + CLI
+├── 02_codebase_navigator_deepseek.py    # DeepSeek Responses API version
 ├── store/
 │   ├── memory.py                   # JSON-based persistent memory
 │   └── vector.py                   # ChromaDB wrapper for embeddings

@@ -27,6 +27,9 @@ Learn how to shape LLM behavior through prompting techniques. Every AI agent's c
 | ![OpenAI](../../.docs/badges/openai.svg)       | [04_few_shot_cot_openai.py](04_few_shot_cot_openai.py)                 | Zero-shot, few-shot & chain-of-thought demos                  |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [05_structured_output_anthropic.py](05_structured_output_anthropic.py) | Product extraction — prompt, XML scaffolding & native schema  |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [06_structured_output_openai.py](06_structured_output_openai.py)       | Product extraction — prompt, scaffolding & schema enforcement |
+| DeepSeek                                        | [07_system_prompts_deepseek.py](07_system_prompts_deepseek.py)         | System prompts & role engineering via Responses API           |
+| DeepSeek                                        | [08_few_shot_cot_deepseek.py](08_few_shot_cot_deepseek.py)             | Zero-shot, few-shot & chain-of-thought demos                  |
+| DeepSeek                                        | [09_structured_output_deepseek.py](09_structured_output_deepseek.py)   | Product extraction — prompt, scaffolding & schema enforcement |
 
 ## 🚀 Quick Start
 
@@ -38,6 +41,30 @@ uv run --directory 01-foundations/02-prompt-engineering python {script_name}
 # Example
 uv run --directory 01-foundations/02-prompt-engineering python 01_system_prompts_anthropic.py
 ```
+
+To compare the system-prompt lesson with DeepSeek, set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 01-foundations/02-prompt-engineering python 07_system_prompts_deepseek.py
+```
+
+The script uses the existing OpenAI SDK with `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`) and `DEEPSEEK_MODEL` (default `deepseek-flash`). It sends the same tickets and three prompt configurations as the OpenAI version. DeepSeek's Responses API supports `instructions` and `output_text`; `reasoning={"effort": "none"}` keeps this comparison focused on the visible answer. See [DeepSeek's Responses API guide](https://api-docs.deepseek.com/guides/responses_api/).
+
+To run the DeepSeek version of the zero-shot, few-shot, and chain-of-thought demos:
+
+```bash
+uv run --directory 01-foundations/02-prompt-engineering python 08_few_shot_cot_deepseek.py
+```
+
+It uses the same prompts and sample inputs as the OpenAI version. The chain-of-thought demonstration asks for visible step-by-step analysis in the prompt, with DeepSeek's built-in thinking mode disabled.
+
+To run the DeepSeek version of the structured-output demo:
+
+```bash
+uv run --directory 01-foundations/02-prompt-engineering python 09_structured_output_deepseek.py
+```
+
+It compares prompted JSON, markdown scaffolding, and Responses API `text.format` schema enforcement on the same product description. The [DeepSeek Responses API](https://api-docs.deepseek.com/api/create-response/) supports `json_schema` output format.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

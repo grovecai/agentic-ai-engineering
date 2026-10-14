@@ -25,7 +25,8 @@ You'll implement a three-tier memory architecture inspired by human cognition: w
 | Provider                                        | File                                                                           | Description                               |
 | ----------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------- |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_memory_agent_anthropic.py](01_memory_agent_anthropic.py)                   | Personal assistant with tiered memory     |
-| ![Anthropic](../../.docs/badges/anthropic.svg) | [02_memory_inspector_anthropic.py](02_memory_inspector_anthropic.py)           | Memory browser/inspector (no LLM calls)   |
+| DeepSeek | [03_memory_agent_deepseek.py](03_memory_agent_deepseek.py) | Personal assistant with the same memory stores |
+| No LLM | [02_memory_inspector_anthropic.py](02_memory_inspector_anthropic.py) | Memory browser for either agent |
 
 ## 🚀 Quick Start
 
@@ -34,6 +35,9 @@ You'll implement a three-tier memory architecture inspired by human cognition: w
 ```bash
 # Memory agent — chat and build persistent memory
 uv run --directory 03-advanced-techniques/05-memory python 01_memory_agent_anthropic.py
+
+# DeepSeek memory agent — set DEEPSEEK_API_KEY in .env first
+uv run --directory 03-advanced-techniques/05-memory python 03_memory_agent_deepseek.py
 
 # Memory inspector — browse and manage stored memories
 uv run --directory 03-advanced-techniques/05-memory python 02_memory_inspector_anthropic.py
@@ -150,7 +154,7 @@ saved = agent.memory.consolidate(agent.messages, agent.client, MODEL)
 # LLM analyzes conversation → extracts facts/events → saves to episodic + semantic
 ```
 
-This catches information the agent didn't explicitly `remember` during the conversation, ensuring nothing important is lost between sessions.
+This can catch information the agent didn't explicitly `remember` during the conversation. The consolidation prompt lists memories already saved in the session, and the manager skips matching persisted content before writing, so an explicitly remembered fact is not saved again merely because it appears in the conversation.
 
 ## 🏗️ Code Structure
 
@@ -163,8 +167,9 @@ This catches information the agent didn't explicitly `remember` during the conve
 │   ├── episodic.py       # EpisodicMemory — JSON-backed event store
 │   ├── semantic.py       # SemanticMemory — ChromaDB vector store
 │   └── manager.py        # MemoryManager — orchestrates all tiers
-├── 01_memory_agent_anthropic.py    # Personal assistant with memory tools
-└── 02_memory_inspector_anthropic.py # Memory browser (no LLM)
+├── 01_memory_agent_anthropic.py    # Anthropic assistant with memory tools
+├── 02_memory_inspector_anthropic.py # Memory browser (no LLM; works for both agents)
+└── 03_memory_agent_deepseek.py     # DeepSeek assistant with memory tools
 ```
 
 | Class | Key Methods |

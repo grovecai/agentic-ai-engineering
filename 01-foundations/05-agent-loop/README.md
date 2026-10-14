@@ -22,6 +22,7 @@ Learn how to build autonomous coding agents that use tools in a loop to complete
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [01_minimal_agent.py](01_minimal_agent.py)                   | Minimal agent loop (~55 lines) with human-in-the-loop confirmation |
 | ![Anthropic](../../.docs/badges/anthropic.svg) | [02_coding_agent_anthropic.py](02_coding_agent_anthropic.py) | Full coding agent using Claude Messages API                        |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [03_coding_agent_openai.py](03_coding_agent_openai.py)       | Coding agent using OpenAI Responses API                            |
+| DeepSeek | [04_coding_agent_deepseek.py](04_coding_agent_deepseek.py) | Coding agent using DeepSeek Responses API |
 
 ## 🚀 Quick Start
 
@@ -33,6 +34,14 @@ uv run --directory 01-foundations/05-agent-loop python {script_name}
 # Example
 uv run --directory 01-foundations/05-agent-loop python 01_minimal_agent.py
 ```
+
+For the DeepSeek coding agent, set `DEEPSEEK_API_KEY` in the root `.env` file and run:
+
+```bash
+uv run --directory 01-foundations/05-agent-loop python 04_coding_agent_deepseek.py
+```
+
+The script uses the existing OpenAI SDK with `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`) and `DEEPSEEK_MODEL` (default `deepseek-flash`). Unlike the OpenAI example, it sends the full input, model output, and tool results on each iteration because DeepSeek's [Responses API is stateless](https://api-docs.deepseek.com/guides/responses_api/). Its file tools stay inside the lesson directory and exclude hidden files; its bash tool accepts only `ls` and `pwd`.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

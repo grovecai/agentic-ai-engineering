@@ -27,6 +27,27 @@ Move beyond text-only agents. This tutorial teaches three core multimodal skills
 | ![Gemini](../../.docs/badges/gemini.svg)       | [02_image_generation_gemini.py](02_image_generation_gemini.py) | Native image generation with Gemini |
 | ![OpenAI](../../.docs/badges/openai.svg)       | [03_audio_openai.py](03_audio_openai.py)                       | Text-to-speech and speech-to-text   |
 
+### DeepSeek variants
+
+DeepSeek's hosted `deepseek-flash` model accepts text and image input and returns text. It does not expose image output, speech synthesis, or speech transcription. The image and audio variants below therefore use DeepSeek for their text step and the existing media provider for generation or transcription. They are **hybrid examples**, not native DeepSeek image/audio APIs. See the [official model capabilities](https://api-docs.deepseek.com/api/list-models/) and [vision guide](https://api-docs.deepseek.com/guides/vision/).
+
+| File | Data flow |
+| --- | --- |
+| [01_vision_deepseek.py](01_vision_deepseek.py) | Image URL or local image → DeepSeek Flash → analysis text |
+| [02_image_generation_deepseek_guided.py](02_image_generation_deepseek_guided.py) | Idea → DeepSeek prompt writing → Gemini image generation → image file |
+| [03_audio_deepseek_guided.py](03_audio_deepseek_guided.py) | Idea/transcript → DeepSeek script or summary; OpenAI TTS/Whisper processes audio |
+
+Set `DEEPSEEK_API_KEY` in the root `.env`. The hybrid scripts also require `GOOGLE_API_KEY` or `OPENAI_API_KEY`, respectively. These examples use the existing `openai` and `google-genai` dependencies.
+
+```bash
+uv run --directory 03-advanced-techniques/07-multimodal python 01_vision_deepseek.py /path/to/photo.jpg --prompt "What is in this image?"
+uv run --directory 03-advanced-techniques/07-multimodal python 01_vision_deepseek.py /path/to/before.png /path/to/after.png --prompt "Compare these images"
+uv run --directory 03-advanced-techniques/07-multimodal python 02_image_generation_deepseek_guided.py "A mountain lake at sunrise"
+uv run --directory 03-advanced-techniques/07-multimodal python 03_audio_deepseek_guided.py speak "Welcome visitors to our museum"
+uv run --directory 03-advanced-techniques/07-multimodal python 03_audio_deepseek_guided.py transcribe /path/to/recording.mp3
+uv run --directory 03-advanced-techniques/07-multimodal python 03_audio_deepseek_guided.py roundtrip "Explain the exhibit"
+```
+
 ## 🚀 Quick Start
 
 > **Prerequisites:** Python 3.11+, API keys, and uv. See [SETUP.md](../../SETUP.md) for full setup instructions.

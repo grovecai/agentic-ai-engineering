@@ -5,6 +5,7 @@ description = "Streaming & real-time output — token-by-token responses and str
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.40.0",
+    "openai>=1.0.0",
     "common",
     "python-dotenv>=1.0.0",
     "rich>=13.7.0",
