@@ -8,7 +8,15 @@ icon: "search"
 
 When an agent does something unexpected, you need to know **exactly why**. Tracing captures the full execution flow — every LLM call, tool invocation, decision point, and intermediate result — so you can reconstruct the agent's reasoning path post-hoc.
 
-This tutorial teaches **observability as a first-class concern** using pure Python. No external dependencies — you learn the concepts, then apply them with production tools.
+This tutorial teaches **observability as a first-class concern** with Python tracing primitives. No external observability service is needed to run the examples.
+
+## Example Intent
+
+These examples follow one debugging loop: **record an agent run → inspect its cost and behavior → locate a failure and replay from a checkpoint**. The trace format is independent of the model provider, so the analysis script can inspect traces produced by either Anthropic or DeepSeek.
+
+- `01_trace_collector.py` records nested agent, LLM, and tool spans, including timing, inputs, outputs, errors, and token counts. With no Anthropic key, it displays a built-in sample trace.
+- `02_trace_analysis.py` uses sample traces to calculate metrics, flag repeated or costly behavior, and compare runs. Its cost figures use fixed teaching estimates, not provider-specific prices.
+- `03_trace_debugging.py` walks three sample failures (bad search, unsupported claims, and a loop), shows the decision path, suggests fixes, and replays from an error checkpoint. Replay is a dry run when no key is configured for the selected provider.
 
 ## 🎯 What You'll Learn
 
@@ -38,7 +46,19 @@ uv run --directory 04-testing-evaluation/03-tracing-debugging python 01_trace_co
 uv run --directory 04-testing-evaluation/03-tracing-debugging python 02_trace_analysis.py
 ```
 
-All scripts include **sample trace data** and work without API keys. Live mode activates automatically when `ANTHROPIC_API_KEY` is set.
+All scripts include **sample trace data** and work without API keys. The collector and debugger use live Anthropic calls automatically when `ANTHROPIC_API_KEY` is set. The analysis script always works offline.
+
+### Run with DeepSeek
+
+Set `DEEPSEEK_API_KEY` in your environment or the repository root `.env`, then run from the repository root:
+
+```bash
+uv run --directory 04-testing-evaluation/03-tracing-debugging python 01_trace_collector.py --provider deepseek
+uv run --directory 04-testing-evaluation/03-tracing-debugging python 02_trace_analysis.py
+uv run --directory 04-testing-evaluation/03-tracing-debugging python 03_trace_debugging.py --provider deepseek
+```
+
+The collector and replay use DeepSeek's [Anthropic-compatible Messages API](https://api-docs.deepseek.com/guides/anthropic_api/) and default to `deepseek-flash`. Set `DEEPSEEK_TRACING_MODEL` to choose another supported model or `DEEPSEEK_ANTHROPIC_BASE_URL` for another compatible endpoint. The DeepSeek flag requires an API key; it does not silently use sample or dry-run mode. Script 02 has no model calls and needs no provider flag. Run the scripts from the repository root so `trace_output.json` is written there.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

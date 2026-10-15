@@ -8,13 +8,11 @@ and breaks down results by eval type (capability vs regression).
 """
 
 import json
-import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import anthropic
 from common import setup_logging
 from dotenv import find_dotenv, load_dotenv
 from rich.console import Console
@@ -24,6 +22,7 @@ from rich.table import Table
 from shared.agent import ResearchAssistant
 from shared.graders import GraderResult, KeywordGrader, SourceCitationGrader, ToolCallGrader
 from shared.knowledge_base import KNOWLEDGE_BASE
+from shared.provider import create_client, provider_argument
 
 load_dotenv(find_dotenv())
 
@@ -399,11 +398,11 @@ def main() -> None:
         )
     )
 
-    has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
-    if has_api_key:
-        console.print("[green]API key found — running live evaluation[/green]\n")
-        client = anthropic.Anthropic()
-        agent = ResearchAssistant(client, KNOWLEDGE_BASE)
+    provider = provider_argument()
+    client, model = create_client(provider)
+    if client is not None:
+        console.print(f"[green]Running live evaluation with {provider} ({model})[/green]\n")
+        agent = ResearchAssistant(client, KNOWLEDGE_BASE, model=model)
     else:
         console.print("[yellow]No API key — using simulated responses for demo[/yellow]\n")
         agent = None

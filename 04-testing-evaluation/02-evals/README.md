@@ -36,7 +36,21 @@ uv run --directory 04-testing-evaluation/02-evals python 01_code_based_graders.p
 uv run --directory 04-testing-evaluation/02-evals python 03_eval_pipeline.py
 ```
 
-All scripts work in **simulated mode** without API keys (using pre-defined responses) and in **live mode** with an `ANTHROPIC_API_KEY`.
+All scripts work in **simulated mode** without an `ANTHROPIC_API_KEY` (using pre-defined responses) and in **live mode** with an `ANTHROPIC_API_KEY`.
+
+### Run with DeepSeek
+
+Set `DEEPSEEK_API_KEY` in your environment or root `.env`, then run from the repository root:
+
+```bash
+uv run --directory 04-testing-evaluation/02-evals python 01_code_based_graders.py --provider deepseek
+uv run --directory 04-testing-evaluation/02-evals python 02_llm_as_judge.py --provider deepseek
+uv run --directory 04-testing-evaluation/02-evals python 03_eval_pipeline.py --provider deepseek
+```
+
+These commands use DeepSeek's [Anthropic-compatible Messages API](https://api-docs.deepseek.com/guides/anthropic_api/) with the `deepseek-flash` model. Set `DEEPSEEK_EVAL_MODEL` to choose another supported model, or `DEEPSEEK_ANTHROPIC_BASE_URL` to use a different compatible endpoint. The DeepSeek flag requires an API key and does not fall back to simulated results. The original Anthropic and simulated commands remain unchanged.
+
+The LLM-as-judge example disables DeepSeek thinking mode for its judge request because its forced `submit_evaluation` tool choice is not supported in thinking mode. Agent answers still use the model's default mode.
 
 Or use the [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) VS Code extension to run the currently open script with a single click.
 

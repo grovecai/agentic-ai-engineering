@@ -13,7 +13,6 @@ Key concepts:
 """
 
 import json
-import os
 import time
 from typing import Any
 
@@ -25,13 +24,12 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
 
+from shared.provider import ANTHROPIC_MODEL, create_client, provider_argument
 from shared.tracer import collect_all_spans
 
 load_dotenv(find_dotenv())
 
 logger = setup_logging(__name__)
-
-MODEL = "claude-sonnet-4-5-20250929"
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +423,7 @@ class TraceReplay:
         trace: dict[str, Any],
         checkpoint_index: int,
         client: anthropic.Anthropic | None = None,
+        model: str = ANTHROPIC_MODEL,
     ) -> dict[str, Any]:
         """Replay from a specific checkpoint, optionally with a live LLM."""
         checkpoints = self.list_checkpoints(trace)
@@ -473,7 +472,7 @@ class TraceReplay:
             token_tracker = AnthropicTokenTracker()
             start = time.time()
             response = client.messages.create(
-                model=MODEL,
+                model=model,
                 max_tokens=1024,
                 system=system_prompt,
                 messages=[{"role": "user", "content": context_text}],
@@ -543,6 +542,8 @@ def main() -> None:
 
     debugger = TraceDebugger()
     replayer = TraceReplay()
+    provider = provider_argument()
+    client, model = create_client(provider)
 
     for trace_name, trace in ALL_FAILING_TRACES.items():
         console.print(f"\n{'=' * 80}")
@@ -599,16 +600,14 @@ def main() -> None:
             console.print()
             console.print(cp_table)
 
-        # Step 5: Dry-run replay from the first errored checkpoint
+        # Step 5: Replay from the first errored checkpoint
         errored_cps = [cp for cp in checkpoints if cp["had_error"]]
         if errored_cps:
             first_error_cp = errored_cps[0]["index"]
-            console.print(f"\n[bold]Dry-run replay from checkpoint {first_error_cp}:[/bold]")
+            mode = "Live" if client is not None else "Dry-run"
+            console.print(f"\n[bold]{mode} replay from checkpoint {first_error_cp}:[/bold]")
 
-            has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
-            client = anthropic.Anthropic() if has_api_key else None
-
-            replay_result = replayer.replay_from(trace, first_error_cp, client=client)
+            replay_result = replayer.replay_from(trace, first_error_cp, client=client, model=model)
             console.print(f"  [dim]{replay_result['replayed_answer']}[/dim]")
 
             if replay_result.get("replay_tokens"):

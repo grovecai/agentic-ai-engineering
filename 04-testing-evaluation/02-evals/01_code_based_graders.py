@@ -7,11 +7,9 @@ Runs the research assistant against a golden dataset and scores each response.
 """
 
 import json
-import os
 from pathlib import Path
 from typing import Any
 
-import anthropic
 from common import setup_logging
 from dotenv import find_dotenv, load_dotenv
 from rich.console import Console
@@ -27,6 +25,7 @@ from shared.graders import (
     ToolCallGrader,
 )
 from shared.knowledge_base import KNOWLEDGE_BASE
+from shared.provider import create_client, provider_argument
 
 load_dotenv(find_dotenv())
 
@@ -150,11 +149,11 @@ def main() -> None:
     )
 
     # Determine mode: live API or simulated
-    has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
-    if has_api_key:
-        console.print("[green]API key found — running live evaluation[/green]\n")
-        client = anthropic.Anthropic()
-        agent = ResearchAssistant(client, KNOWLEDGE_BASE)
+    provider = provider_argument()
+    client, model = create_client(provider)
+    if client is not None:
+        console.print(f"[green]Running live evaluation with {provider} ({model})[/green]\n")
+        agent = ResearchAssistant(client, KNOWLEDGE_BASE, model=model)
     else:
         console.print("[yellow]No API key — using simulated responses for demo[/yellow]\n")
         agent = None

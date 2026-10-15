@@ -12,11 +12,10 @@ import anthropic
 from common import AnthropicTokenTracker, setup_logging
 
 from shared.knowledge_base import SYSTEM_PROMPT, TOOLS, execute_tool
+from shared.provider import ANTHROPIC_MODEL
 from shared.tracer import TraceCollector
 
 logger = setup_logging(__name__)
-
-MODEL = "claude-sonnet-4-5-20250929"
 
 
 class TracedResearchAssistant:
@@ -26,9 +25,11 @@ class TracedResearchAssistant:
         self,
         client: anthropic.Anthropic,
         tracer: TraceCollector,
+        model: str = ANTHROPIC_MODEL,
     ) -> None:
         self.client = client
         self.tracer = tracer
+        self.model = model
         self.token_tracker = AnthropicTokenTracker()
 
     def answer(self, question: str) -> dict[str, Any]:
@@ -45,7 +46,7 @@ class TracedResearchAssistant:
                     {"message_count": len(messages)},
                 ) as llm_span:
                     response = self.client.messages.create(
-                        model=MODEL,
+                        model=self.model,
                         max_tokens=1024,
                         system=SYSTEM_PROMPT,
                         tools=TOOLS,

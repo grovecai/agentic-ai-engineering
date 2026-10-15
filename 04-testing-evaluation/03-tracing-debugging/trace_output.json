@@ -1,17 +1,17 @@
 {
-  "trace_id": "e2247a63",
+  "trace_id": "5e72f992",
   "spans": [
     {
       "name": "answer_question",
       "span_type": "agent_step",
-      "start_time": 1772771706.309427,
-      "end_time": 1772771715.711722,
-      "duration_ms": 9402.29,
+      "start_time": 1792032886.362411,
+      "end_time": 1792032896.9838579,
+      "duration_ms": 10621.45,
       "inputs": {
         "question": "What are the benefits of microservices?"
       },
       "outputs": {
-        "answer": "Based on the knowledge base, here are the **benefits of microservices architecture**:\n\n1. **Scalability** - Microservices can be scaled independently, allowing you to scale only the specific services ",
+        "answer": "Based on the knowledge base, here's what I found about microservices:\n\n## Microservices Architecture (doc_001)\n\nMicroservices architecture **decomposes applications into small, independent services**.",
         "llm_calls": 3
       },
       "metadata": {},
@@ -21,9 +21,9 @@
         {
           "name": "llm_call_1",
           "span_type": "llm_call",
-          "start_time": 1772771706.309437,
-          "end_time": 1772771708.0584562,
-          "duration_ms": 1749.02,
+          "start_time": 1792032886.362419,
+          "end_time": 1792032889.74595,
+          "duration_ms": 3383.53,
           "inputs": {
             "message_count": 1
           },
@@ -32,8 +32,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 715,
-            "output": 73
+            "input": 433,
+            "output": 121
           },
           "error": null,
           "children": []
@@ -41,9 +41,9 @@
         {
           "name": "tool_search_knowledge_base",
           "span_type": "tool_call",
-          "start_time": 1772771708.058495,
-          "end_time": 1772771708.058559,
-          "duration_ms": 0.06,
+          "start_time": 1792032889.7459898,
+          "end_time": 1792032889.746072,
+          "duration_ms": 0.08,
           "inputs": {
             "tool": "search_knowledge_base",
             "input": {
@@ -59,11 +59,31 @@
           "children": []
         },
         {
+          "name": "tool_search_knowledge_base",
+          "span_type": "tool_call",
+          "start_time": 1792032889.746101,
+          "end_time": 1792032889.746131,
+          "duration_ms": 0.03,
+          "inputs": {
+            "tool": "search_knowledge_base",
+            "input": {
+              "query": "microservices architecture advantages"
+            }
+          },
+          "outputs": {
+            "result": "[{'id': 'doc_001', 'title': 'Microservices Architecture', 'score': 2}, {'id': 'doc_007', 'title': 'Event-Driven Architecture', 'score': 1}]"
+          },
+          "metadata": {},
+          "tokens": {},
+          "error": null,
+          "children": []
+        },
+        {
           "name": "llm_call_2",
           "span_type": "llm_call",
-          "start_time": 1772771708.058593,
-          "end_time": 1772771709.8966131,
-          "duration_ms": 1838.02,
+          "start_time": 1792032889.7461572,
+          "end_time": 1792032893.260324,
+          "duration_ms": 3514.17,
           "inputs": {
             "message_count": 3
           },
@@ -72,8 +92,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 849,
-            "output": 57
+            "input": 150,
+            "output": 94
           },
           "error": null,
           "children": []
@@ -81,9 +101,9 @@
         {
           "name": "tool_get_document",
           "span_type": "tool_call",
-          "start_time": 1772771709.8966389,
-          "end_time": 1772771709.8966599,
-          "duration_ms": 0.02,
+          "start_time": 1792032893.2603781,
+          "end_time": 1792032893.260405,
+          "duration_ms": 0.03,
           "inputs": {
             "tool": "get_document",
             "input": {
@@ -99,11 +119,31 @@
           "children": []
         },
         {
+          "name": "tool_get_document",
+          "span_type": "tool_call",
+          "start_time": 1792032893.2604449,
+          "end_time": 1792032893.260463,
+          "duration_ms": 0.02,
+          "inputs": {
+            "tool": "get_document",
+            "input": {
+              "doc_id": "doc_007"
+            }
+          },
+          "outputs": {
+            "result": "{'id': 'doc_007', 'title': 'Event-Driven Architecture', 'content': 'Event-driven architecture uses events to trigger communication between services. Patterns: event sourcing, CQRS, pub/sub. Benefits: "
+          },
+          "metadata": {},
+          "tokens": {},
+          "error": null,
+          "children": []
+        },
+        {
           "name": "llm_call_3",
           "span_type": "llm_call",
-          "start_time": 1772771709.896696,
-          "end_time": 1772771715.7116768,
-          "duration_ms": 5814.98,
+          "start_time": 1792032893.260488,
+          "end_time": 1792032896.983752,
+          "duration_ms": 3723.26,
           "inputs": {
             "message_count": 5
           },
@@ -112,8 +152,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 1016,
-            "output": 245
+            "input": 300,
+            "output": 319
           },
           "error": null,
           "children": []
@@ -123,14 +163,14 @@
     {
       "name": "answer_question",
       "span_type": "agent_step",
-      "start_time": 1772771715.7137501,
-      "end_time": 1772771725.633127,
-      "duration_ms": 9919.38,
+      "start_time": 1792032896.98657,
+      "end_time": 1792032907.504124,
+      "duration_ms": 10517.55,
       "inputs": {
         "question": "How should I design a REST API?"
       },
       "outputs": {
-        "answer": "Based on the documentation, here are the key principles for designing a REST API:\n\n## Core Design Principles\n\n**Resource-Oriented Design:**\n- Structure your API around resources (nouns) rather than ac",
+        "answer": "Based on the knowledge base, here's what the document **\"REST API Design\"** (doc_002) covers:\n\n**Core principles**\n- REST APIs follow **resource-oriented design principles**.\n- Use **nouns for endpoin",
         "llm_calls": 3
       },
       "metadata": {},
@@ -140,9 +180,9 @@
         {
           "name": "llm_call_1",
           "span_type": "llm_call",
-          "start_time": 1772771715.713759,
-          "end_time": 1772771717.441584,
-          "duration_ms": 1727.83,
+          "start_time": 1792032896.98658,
+          "end_time": 1792032900.612621,
+          "duration_ms": 3626.04,
           "inputs": {
             "message_count": 1
           },
@@ -151,8 +191,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 714,
-            "output": 75
+            "input": 177,
+            "output": 148
           },
           "error": null,
           "children": []
@@ -160,17 +200,39 @@
         {
           "name": "tool_search_knowledge_base",
           "span_type": "tool_call",
-          "start_time": 1772771717.441605,
-          "end_time": 1772771717.441652,
+          "start_time": 1792032900.6126668,
+          "end_time": 1792032900.612729,
+          "duration_ms": 0.06,
+          "inputs": {
+            "tool": "search_knowledge_base",
+            "input": {
+              "query": "REST API design",
+              "max_results": 5
+            }
+          },
+          "outputs": {
+            "result": "[{'id': 'doc_002', 'title': 'REST API Design', 'score': 3}, {'id': 'doc_001', 'title': 'Microservices Architecture', 'score': 1}]"
+          },
+          "metadata": {},
+          "tokens": {},
+          "error": null,
+          "children": []
+        },
+        {
+          "name": "tool_search_knowledge_base",
+          "span_type": "tool_call",
+          "start_time": 1792032900.612767,
+          "end_time": 1792032900.612819,
           "duration_ms": 0.05,
           "inputs": {
             "tool": "search_knowledge_base",
             "input": {
-              "query": "REST API design principles best practices"
+              "query": "REST API best practices",
+              "max_results": 5
             }
           },
           "outputs": {
-            "result": "[{'id': 'doc_002', 'title': 'REST API Design', 'score': 6}, {'id': 'doc_001', 'title': 'Microservices Architecture', 'score': 1}, {'id': 'doc_005', 'title': 'CI/CD Pipelines', 'score': 1}]"
+            "result": "[{'id': 'doc_002', 'title': 'REST API Design', 'score': 4}, {'id': 'doc_001', 'title': 'Microservices Architecture', 'score': 1}, {'id': 'doc_005', 'title': 'CI/CD Pipelines', 'score': 1}]"
           },
           "metadata": {},
           "tokens": {},
@@ -180,9 +242,9 @@
         {
           "name": "llm_call_2",
           "span_type": "llm_call",
-          "start_time": 1772771717.441683,
-          "end_time": 1772771719.392132,
-          "duration_ms": 1950.45,
+          "start_time": 1792032900.612845,
+          "end_time": 1792032903.690867,
+          "duration_ms": 3078.02,
           "inputs": {
             "message_count": 3
           },
@@ -191,8 +253,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 873,
-            "output": 57
+            "input": 202,
+            "output": 63
           },
           "error": null,
           "children": []
@@ -200,9 +262,9 @@
         {
           "name": "tool_get_document",
           "span_type": "tool_call",
-          "start_time": 1772771719.392149,
-          "end_time": 1772771719.392162,
-          "duration_ms": 0.01,
+          "start_time": 1792032903.6909068,
+          "end_time": 1792032903.69093,
+          "duration_ms": 0.02,
           "inputs": {
             "tool": "get_document",
             "input": {
@@ -220,9 +282,9 @@
         {
           "name": "llm_call_3",
           "span_type": "llm_call",
-          "start_time": 1772771719.3921862,
-          "end_time": 1772771725.633085,
-          "duration_ms": 6240.9,
+          "start_time": 1792032903.690967,
+          "end_time": 1792032907.5040221,
+          "duration_ms": 3813.06,
           "inputs": {
             "message_count": 5
           },
@@ -231,8 +293,8 @@
           },
           "metadata": {},
           "tokens": {
-            "input": 1016,
-            "output": 287
+            "input": 224,
+            "output": 325
           },
           "error": null,
           "children": []

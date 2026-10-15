@@ -12,10 +12,8 @@ Key concepts:
 - Trace serialization: export traces as JSON for later analysis and debugging
 """
 
-import os
 from typing import Any
 
-import anthropic
 from common import setup_logging
 from dotenv import find_dotenv, load_dotenv
 from rich.console import Console
@@ -23,6 +21,7 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from shared.agent import TracedResearchAssistant
+from shared.provider import create_client, provider_argument
 from shared.tracer import TraceCollector
 
 load_dotenv(find_dotenv())
@@ -174,13 +173,13 @@ def main() -> None:
     )
 
     # Determine run mode
-    has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    provider = provider_argument()
+    client, model = create_client(provider)
 
-    if has_api_key:
-        console.print("\n[green]API key found — running live traced agent[/green]\n")
-        client = anthropic.Anthropic()
+    if client is not None:
+        console.print(f"\n[green]Running live traced agent with {provider} ({model})[/green]\n")
         tracer = TraceCollector()
-        assistant = TracedResearchAssistant(client, tracer)
+        assistant = TracedResearchAssistant(client, tracer, model=model)
 
         questions = [
             "What are the benefits of microservices?",

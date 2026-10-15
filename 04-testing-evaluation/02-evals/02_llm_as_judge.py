@@ -7,7 +7,6 @@ tool_choice to enforce structured output.
 """
 
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -21,6 +20,7 @@ from rich.table import Table
 
 from shared.agent import ResearchAssistant
 from shared.knowledge_base import KNOWLEDGE_BASE
+from shared.provider import create_client, provider_argument
 
 load_dotenv(find_dotenv())
 
@@ -130,9 +130,11 @@ class LLMJudge:
         self,
         client: anthropic.Anthropic,
         model: str = "claude-sonnet-4-5-20250929",
+        disable_thinking: bool = False,
     ) -> None:
         self.client = client
         self.model = model
+        self.disable_thinking = disable_thinking
         self.token_tracker = AnthropicTokenTracker()
 
     def evaluate(
@@ -156,6 +158,9 @@ class LLMJudge:
         logger.info("LLM judge evaluating answer (question: %s...)", question[:50])
 
         # Use tool_choice to force structured output via the submit_evaluation tool
+        # DeepSeek enables thinking by default, but named tool_choice is unavailable
+        # in that mode. Anthropic's native endpoint does not need this override.
+        thinking = {"thinking": {"type": "disabled"}} if self.disable_thinking else {}
         response = self.client.messages.create(
             model=self.model,
             max_tokens=1024,
@@ -163,6 +168,7 @@ class LLMJudge:
             tools=JUDGE_TOOLS,
             tool_choice={"type": "tool", "name": "submit_evaluation"},
             messages=[{"role": "user", "content": prompt}],
+            **thinking,
         )
         self.token_tracker.track(response.usage)
 
@@ -256,12 +262,12 @@ def main() -> None:
         )
     )
 
-    has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
-    if has_api_key:
-        console.print("[green]API key found — running live evaluation[/green]\n")
-        client = anthropic.Anthropic()
-        agent = ResearchAssistant(client, KNOWLEDGE_BASE)
-        judge = LLMJudge(client)
+    provider = provider_argument()
+    client, model = create_client(provider)
+    if client is not None:
+        console.print(f"[green]Running live evaluation with {provider} ({model})[/green]\n")
+        agent = ResearchAssistant(client, KNOWLEDGE_BASE, model=model)
+        judge = LLMJudge(client, model=model, disable_thinking=provider == "deepseek")
     else:
         console.print("[yellow]No API key — using simulated results for demo[/yellow]\n")
         agent = None
