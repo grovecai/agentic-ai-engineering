@@ -1,0 +1,5 @@
+[project]
+name = "framework-09-semantic-kernel"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["semantic-kernel>=1.20", "openai>=1.60", "python-dotenv>=1.0"]

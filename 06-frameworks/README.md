@@ -7,7 +7,10 @@ description: "One agent, nine implementations — build the same system with eac
 
 One agent, nine implementations. Build the same system with each framework so you can compare trade-offs with your own hands instead of trusting someone's blog post.
 
-> 🚧 **Coming soon** — this module is under active development. [Subscribe to our Substack](https://agenticloopsai.substack.com) or ⭐️ star the repo to get notified when tutorials drop.
+
+## DeepSeek 实现
+
+本章的设计与边界见 [DESIGN.md](DESIGN.md)。每节都有可运行的 DeepSeek 示例，需设置 `DEEPSEEK_API_KEY`。各节 README 给出命令和依赖。
 
 ## 💡 Why This Module Exists
 

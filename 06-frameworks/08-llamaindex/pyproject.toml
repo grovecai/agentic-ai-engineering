@@ -1,0 +1,5 @@
+[project]
+name = "framework-08-llamaindex"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["llama-index-core>=0.12", "llama-index-llms-openai-like>=0.3", "python-dotenv>=1.0"]

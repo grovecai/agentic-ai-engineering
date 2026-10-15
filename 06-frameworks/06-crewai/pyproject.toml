@@ -1,0 +1,5 @@
+[project]
+name = "framework-06-crewai"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["crewai>=0.100,<1", "onnxruntime>=1.18,<1.21", "python-dotenv>=1.0"]

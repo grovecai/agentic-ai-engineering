@@ -7,7 +7,10 @@ description: "Harness the agent loop — add skills, MCP, sandboxing, subagents,
 
 You built the bare agent loop in [Foundations](../01-foundations/05-agent-loop/). This module takes that loop and progressively *harnesses* it — each tutorial adds one orthogonal control surface that turns a naive loop into a real, extensible agent.
 
-> 🚧 **Coming soon** — this module is under active development. [Subscribe to our Substack](https://agenticloopsai.substack.com) or ⭐️ star the repo to get notified when tutorials drop.
+
+## DeepSeek 实现
+
+本章的设计与边界见 [DESIGN.md](DESIGN.md)。每节都有可运行的 DeepSeek 示例，需设置 `DEEPSEEK_API_KEY`。各节 README 给出命令和依赖。
 
 ## 💡 Why This Module Exists
 

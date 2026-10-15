@@ -1,0 +1,5 @@
+[project]
+name = "framework-04-google-adk"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["google-adk>=1.0", "litellm>=1.60", "python-dotenv>=1.0"]

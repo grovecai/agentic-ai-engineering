@@ -2,7 +2,6 @@
 title: "Sandboxing"
 description: "Run agent-generated code and tool calls in isolation with resource limits and timeouts"
 icon: "shield"
-status: "coming-soon"
 --- -->
 
 # Sandboxing
@@ -16,4 +15,19 @@ Run agent-generated code and tool calls without handing over the machine. Start 
 - Add an optional Docker (`--network none`) tier for a real isolation boundary
 - Understand what each tier actually protects against — and what it doesn't
 
-> 🚧 **Coming soon** — [Subscribe to our Substack](https://agenticloopsai.substack.com) or ⭐️ star the repo to get notified when this tutorial drops.
+## DeepSeek 示例
+
+用隔离的子进程运行固定演示代码，限制时间、内存与输出。
+
+从仓库根目录运行：
+
+```bash
+uv run --directory 05-loop-engineering python 03-sandboxing/demo.py
+```
+
+设置 `DEEPSEEK_API_KEY`（可放在根目录 `.env`）；可选 `DEEPSEEK_BASE_URL` 和 `DEEPSEEK_MODEL`。模型调用会产生 API 费用。
+The subprocess limits here are a teaching baseline. Use a container or dedicated sandbox service for hostile code.
+
+### 实现说明
+
+本地子进程只演示资源限制。它不构成对恶意代码的强隔离；生产需要专门的容器或沙箱。

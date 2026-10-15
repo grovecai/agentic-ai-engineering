@@ -7,7 +7,10 @@ description: "The gap between 'works on my laptop' and 'runs reliably at scale' 
 
 The gap between "works on my laptop" and "runs reliably at scale." Principles, deployment, monitoring, cost control, and security for agents serving real users.
 
-> 🚧 **Coming soon** — this module is under active development. [Subscribe to our Substack](https://agenticloopsai.substack.com) or ⭐️ star the repo to get notified when tutorials drop.
+
+## DeepSeek 实现
+
+本章的设计与边界见 [DESIGN.md](DESIGN.md)。每节都有可运行的 DeepSeek 示例，需设置 `DEEPSEEK_API_KEY`。各节 README 给出命令和依赖。
 
 ## 💡 Why This Module Matters
 

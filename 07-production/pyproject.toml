@@ -1,0 +1,8 @@
+[project]
+name = "lesson-production"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["openai>=1.60", "python-dotenv>=1.0", "fastapi>=0.115", "uvicorn>=0.30"]
+
+[tool.ruff]
+line-length = 100
