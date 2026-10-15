@@ -29,4 +29,6 @@ uv run --directory 05-loop-engineering python 01-skills/demo.py
 
 ### 实现说明
 
-目录只向模型暴露名称与描述；加载时校验名称并限制读取路径。
+`skills.py` 扫描 `skills/*/SKILL.md` 的 front matter，在 system prompt 中只放名称和描述。目录有 `incident-summary` 和 `deployment-checklist` 两个技能，agent 根据任务选择。选中后调用 `load_skill` 获取完整指令；当指令引用附属文件时，再调用 `read_skill_file`。事故总结技能提供 `references/template.md`，因此可以观察三个层级的加载。未加载技能时，附属文件不可读；所有读取都被限制在该技能目录内。
+
+增加技能时，新建 `skills/<name>/SKILL.md`，front matter 的 `name` 必须与目录名一致，并提供 `description`。运行时目录会自动出现在目录提示和工具参数枚举中，无需修改 agent 代码。

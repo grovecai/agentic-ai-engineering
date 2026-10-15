@@ -11,8 +11,8 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 from harness import Agent, Hooks, Tool, client_from_env
+from skills import SkillRegistry
 
-load_skill = runpy.run_path(str(ROOT / "01-skills/demo.py"))["load_skill"]
 run_snippet = runpy.run_path(str(ROOT / "03-sandboxing/demo.py"))["run_snippet"]
 research = runpy.run_path(str(ROOT / "05-subagents/demo.py"))["research"]
 compact = runpy.run_path(str(ROOT / "06-context-compaction/demo.py"))["compact"]
@@ -36,6 +36,7 @@ async def main() -> None:
                     raise ValueError("MCP lookup failed")
                 return "\n".join(block.text for block in result.content if hasattr(block, "text"))
 
+            registry = SkillRegistry(ROOT / "01-skills/skills")
             tools = [
                 Tool(
                     mcp_schema.name,
@@ -43,16 +44,7 @@ async def main() -> None:
                     mcp_schema.inputSchema,
                     mcp_lookup,
                 ),
-                Tool(
-                    "load_skill",
-                    "Load incident-summary instructions when relevant.",
-                    {
-                        "type": "object",
-                        "properties": {"name": {"type": "string", "enum": ["incident-summary"]}},
-                        "required": ["name"],
-                    },
-                    load_skill,
-                ),
+                *registry.tools(),
                 Tool(
                     "delegate_research",
                     "Delegate up to two independent questions to isolated child agents.",
@@ -86,12 +78,14 @@ async def main() -> None:
             agent = Agent(client_from_env(), tools, Hooks(before=[approve]), max_steps=7)
             answer = await asyncio.to_thread(
                 agent.run,
-                "Summarize incident response and deployment rollback. Load the incident-summary skill, "
-                "delegate one question for each topic, check both local documents through MCP, "
+                "Summarize incident response with its template and deployment rollback. "
+                "Delegate one question for each topic, check both local documents through MCP, "
                 "and run the fixed calculation as a tool demonstration.",
-                "Use tools for facts. Cite document IDs. Keep the final answer brief.",
+                registry.catalog_prompt()
+                + "\nUse tools for facts. Cite document IDs. Keep the final answer brief.",
             )
             print(answer)
+            print("Skills loaded on demand:", sorted(registry.loaded))
             print("Parent token usage:", agent.last_usage)
             first_turn = agent.last_messages
             follow_up = await asyncio.to_thread(

@@ -29,4 +29,4 @@ uv run --directory 05-loop-engineering python 07-extensible-agent/demo.py
 
 ### 实现说明
 
-capstone 同时注册技能、MCP、子 agent 和固定沙箱工具，通过 hook 控制调用并在第二轮后压缩历史。
+capstone 复用 01 的 `SkillRegistry`：启动时扫描技能目录，将简短目录加入 system prompt，并动态注册 `load_skill` / `read_skill_file`。同一 agent 还注册 MCP、子 agent 和固定沙箱工具，通过 hook 控制调用并在第二轮后压缩历史。运行输出会列出实际加载的技能。

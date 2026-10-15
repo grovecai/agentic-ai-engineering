@@ -7,7 +7,7 @@ needs a web account or a writable external service.
 
 | Lesson | Concrete behavior | Main boundary |
 | --- | --- | --- |
-| Skills | Discover a catalog, load one instruction file on demand | Resolve paths inside the skills directory |
+| Skills | Discover front matter, load SKILL.md, then read referenced files | Resolve paths inside the selected skill directory |
 | Hooks | Observe before/after calls, reject a forbidden call | Hook rejection stops tool execution |
 | Sandboxing | Execute an allowlisted Python snippet in a subprocess | Resource limits are a teaching baseline, not strong isolation |
 | MCP | Discover and call a local stdio MCP server | Tool schemas and results cross a process boundary |
@@ -20,3 +20,8 @@ All live examples use `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL` (default
 The demos use the OpenAI-compatible Chat Completions API with thinking disabled
 for predictable tool-call history. Offline checks exercise the boundaries
 without making billable calls.
+
+`SkillRegistry` is shared by lesson 01 and the capstone. Adding a valid skill
+folder changes both agents' catalogs and tool schemas without editing either
+agent. A skill's full instructions enter model context only after `load_skill`;
+supporting files enter only after `read_skill_file` for a loaded skill.

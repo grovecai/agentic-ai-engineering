@@ -1,11 +1,13 @@
 """Offline boundary checks for the shared loop and compaction."""
 
 import runpy
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
 from harness import LOOKUP, Agent, Hooks
+from skills import SkillRegistry
 
 
 class Message:
@@ -59,10 +61,74 @@ class ExampleTests(unittest.TestCase):
                 ]
             )
 
+    def test_skill_discovery_and_progressive_loading(self):
+        registry = SkillRegistry(Path(__file__).parent / "01-skills/skills")
+        self.assertIn("incident-summary", registry.discover())
+        self.assertNotIn("When summarizing an incident", registry.catalog_prompt())
+        with self.assertRaises(PermissionError):
+            registry.read_skill_file({"name": "incident-summary", "path": "references/template.md"})
+        self.assertIn(
+            "When summarizing an incident", registry.load_skill({"name": "incident-summary"})
+        )
+        self.assertIn(
+            "Timeline",
+            registry.read_skill_file(
+                {"name": "incident-summary", "path": "references/template.md"}
+            ),
+        )
+
+    def test_new_skill_appears_without_agent_code_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "report-writer").mkdir()
+            (root / "report-writer/SKILL.md").write_text(
+                "---\nname: report-writer\ndescription: Write concise reports.\n---\n\nUse headings.\n"
+            )
+            registry = SkillRegistry(root)
+            self.assertIn("report-writer", registry.catalog_prompt())
+            self.assertIn(
+                "report-writer",
+                registry.tools()[0].schema()["function"]["parameters"]["properties"]["name"][
+                    "enum"
+                ],
+            )
+
     def test_skill_path_is_bounded(self):
-        loader = runpy.run_path(str(Path(__file__).parent / "01-skills/demo.py"))["load_skill"]
+        registry = SkillRegistry(Path(__file__).parent / "01-skills/skills")
         with self.assertRaises(ValueError):
-            loader({"name": "../incident-summary"})
+            registry.load_skill({"name": "../incident-summary"})
+        registry.load_skill({"name": "incident-summary"})
+        with self.assertRaises(ValueError):
+            registry.read_skill_file({"name": "incident-summary", "path": "../../../../.env"})
+
+    def test_agent_loads_skill_then_supporting_file(self):
+        registry = SkillRegistry(Path(__file__).parent / "01-skills/skills")
+        calls = [
+            SimpleNamespace(
+                id="skill",
+                function=SimpleNamespace(
+                    name="load_skill", arguments='{"name":"incident-summary"}'
+                ),
+            ),
+            SimpleNamespace(
+                id="file",
+                function=SimpleNamespace(
+                    name="read_skill_file",
+                    arguments='{"name":"incident-summary","path":"references/template.md"}',
+                ),
+            ),
+        ]
+        client = Client(
+            [
+                Message(calls=[calls[0]]),
+                Message(calls=[calls[1]]),
+                Message(content="Summary with timeline"),
+            ]
+        )
+        agent = Agent(client, registry.tools())
+        self.assertIn("timeline", agent.run("Summarize incident", registry.catalog_prompt()))
+        self.assertEqual(registry.loaded, {"incident-summary"})
+        self.assertIn("Timeline", agent.last_messages[-2]["content"])
 
 
 if __name__ == "__main__":
